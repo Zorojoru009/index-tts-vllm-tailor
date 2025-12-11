@@ -16,3 +16,4 @@ checkpoints/*
 output.wav
 
 logs/
+.claude/settings.local.json

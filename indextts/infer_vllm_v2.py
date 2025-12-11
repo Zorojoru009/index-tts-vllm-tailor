@@ -86,7 +86,6 @@ class IndexTTS2:
             gpu_memory_utilization=min(gpu_memory_utilization, 0.85),
             max_num_seqs=256,
             max_num_batched_tokens=4096,
-            kv_cache_dtype="fp8",
             # enforce_eager=True,
         )
         indextts_vllm = AsyncLLM.from_engine_args(engine_args)
@@ -513,7 +512,6 @@ class QwenEmotion:
             max_model_len=2048,
             max_num_seqs=128,
             max_num_batched_tokens=2048,
-            kv_cache_dtype="fp8",
         )
         self.model = AsyncLLM.from_engine_args(engine_args)
 
