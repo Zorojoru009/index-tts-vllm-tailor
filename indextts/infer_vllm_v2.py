@@ -83,9 +83,10 @@ class IndexTTS2:
             model=vllm_dir,
             tensor_parallel_size=1,
             dtype="auto",
-            gpu_memory_utilization=min(gpu_memory_utilization, 0.85),
+            gpu_memory_utilization=min(gpu_memory_utilization, 0.90),
             max_num_seqs=256,
             max_num_batched_tokens=4096,
+            device="cuda:0",  # GPT model on GPU 0
             # enforce_eager=True,
         )
         indextts_vllm = AsyncLLM.from_engine_args(engine_args)
@@ -93,6 +94,7 @@ class IndexTTS2:
         self.qwen_emo = QwenEmotion(
             os.path.join(self.model_dir, self.cfg.qwen_emo_path),
             gpu_memory_utilization=qwenemo_gpu_memory_utilization,
+            device="cuda:1",  # QwenEmotion on GPU 1
         )
 
         self.gpt = UnifiedVoice(indextts_vllm, **self.cfg.gpt)
@@ -493,7 +495,7 @@ def find_most_similar_cosine(query_vector, matrix):
     return most_similar_index
 
 class QwenEmotion:
-    def __init__(self, model_dir, gpu_memory_utilization=0.1):
+    def __init__(self, model_dir, gpu_memory_utilization=0.1, device="cuda:0"):
         self.model_dir = model_dir
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
 
@@ -512,6 +514,7 @@ class QwenEmotion:
             max_model_len=2048,
             max_num_seqs=128,
             max_num_batched_tokens=2048,
+            device=device,  # Use specified device
         )
         self.model = AsyncLLM.from_engine_args(engine_args)
 
