@@ -83,7 +83,10 @@ class IndexTTS2:
             model=vllm_dir,
             tensor_parallel_size=1,
             dtype="auto",
-            gpu_memory_utilization=gpu_memory_utilization,
+            gpu_memory_utilization=min(gpu_memory_utilization, 0.85),
+            max_num_seqs=256,
+            max_num_batched_tokens=4096,
+            kv_cache_dtype="float8",
             # enforce_eager=True,
         )
         indextts_vllm = AsyncLLM.from_engine_args(engine_args)
@@ -506,8 +509,11 @@ class QwenEmotion:
             model=model_dir,
             tensor_parallel_size=1,
             dtype="auto",
-            gpu_memory_utilization=gpu_memory_utilization,
+            gpu_memory_utilization=min(gpu_memory_utilization, 0.85),
             max_model_len=2048,
+            max_num_seqs=128,
+            max_num_batched_tokens=2048,
+            kv_cache_dtype="float8",
         )
         self.model = AsyncLLM.from_engine_args(engine_args)
 
