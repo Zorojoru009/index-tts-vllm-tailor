@@ -79,6 +79,7 @@ class IndexTTS2:
         self.stop_mel_token = self.cfg.gpt.stop_mel_token
 
         vllm_dir = os.path.join(model_dir, "gpt")
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # GPT model on GPU 0
         engine_args = AsyncEngineArgs(
             model=vllm_dir,
             tensor_parallel_size=1,
@@ -86,7 +87,6 @@ class IndexTTS2:
             gpu_memory_utilization=min(gpu_memory_utilization, 0.90),
             max_num_seqs=256,
             max_num_batched_tokens=4096,
-            device="cuda:0",  # GPT model on GPU 0
             # enforce_eager=True,
         )
         indextts_vllm = AsyncLLM.from_engine_args(engine_args)
@@ -495,7 +495,7 @@ def find_most_similar_cosine(query_vector, matrix):
     return most_similar_index
 
 class QwenEmotion:
-    def __init__(self, model_dir, gpu_memory_utilization=0.1, device="cuda:0"):
+    def __init__(self, model_dir, gpu_memory_utilization=0.1, device="cuda:1"):
         self.model_dir = model_dir
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_dir)
 
@@ -506,6 +506,8 @@ class QwenEmotion:
         # )
         # self.model = self.model.to("cuda")
 
+        # Set CUDA_VISIBLE_DEVICES to isolate this model to specified GPU
+        os.environ["CUDA_VISIBLE_DEVICES"] = device.split(":")[-1]  # Extract GPU number
         engine_args = AsyncEngineArgs(
             model=model_dir,
             tensor_parallel_size=1,
@@ -514,7 +516,6 @@ class QwenEmotion:
             max_model_len=2048,
             max_num_seqs=128,
             max_num_batched_tokens=2048,
-            device=device,  # Use specified device
         )
         self.model = AsyncLLM.from_engine_args(engine_args)
 
